@@ -1,0 +1,258 @@
+1. LIBRARY:  npm install react-hook-form
+
+2. register() used for registering a form state
+   eg: const { name, ref, onChange, onBlur } = register("username");
+
+3. Visualize state use dependency: npm install -D @hookform/devtools
+   Import the component: 
+   import {DevTool} from '@hookform/devtools'
+   place in jsx end: <DevTool control={control}/>
+
+4. FOR ADDING VALIDATION
+    -> Attach the validation with register
+    -> Eg: 
+    <input 
+            type="email" 
+            id="email" 
+            {...register("email",{
+                pattern: {
+                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                    message: 'Invalid email format'
+                },
+                required: {
+                    value: true,
+                    message: 'Email is required'
+                }
+            })} 
+        />
+
+5. ADDING CUSTOM VALIDATION
+     -> Attach validate function with the register
+     -> Eg: 
+        <input 
+                type="email" 
+                id="email" 
+                {...register("email",{
+                    pattern: {
+                        value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                        message: 'Invalid email format'
+                    },
+                    // CUSTOM VALIDATION
+                    validate: (fieldValue)=>{
+                        return fieldValue!=='admin@gmail.com' || "Enter a different email"
+                    }
+                })} 
+            />
+     -> If validation is correct return true else return the validation error message
+
+
+6. ADDING MULTIPLE CUSTOM VALIDATION
+    -> use validate object
+    -> Eg: 
+        // CUSTOM VALIDATION
+        validate: {
+            notAdmin: (fieldValue)=>{
+                return fieldValue!=='admin@gmail.com' || "Enter a different email"
+            },
+
+            notBlackListedDomain: (fieldValue)=>{
+                return !fieldValue.endsWith('gmail.com') || "This domain is not supported"
+            },
+
+            notSlang: (fieldValue)=>{
+                const SLANG_REGEX = /(bastard|junkie)/i
+                return !SLANG_REGEX.test(fieldValue) || "Enter an appropriate email"
+            }
+        }
+
+
+
+7. FOR DISPLAYING ERROR MESSAGES
+        -> Destructure formState from form and then errors
+        -> Eg: 
+           <p className="error">{errors.email?.message}</p>
+
+8. FOR DEFAULT VALUES
+    -> const form = useForm({
+            defaultValues:{                // SETTING DEFAULT VALUES        
+                username: 'rahulGupta899', 
+                email: 'rgupta.jan@outlook.com', 
+                channel: 'seeken'
+            }
+        });
+
+9. DEFAULT VALUE FROM API ENDPOINT
+    -> Eg:
+    const form = useForm({
+        defaultValues: async()=>{
+            const res = await fetch('https://jsonplaceholder.typicode.com/users/1');
+            const data = await res.json();
+            return {
+                username: 'RahulGupta899',
+                email: data.email,
+                channel: data?.company?.name
+            }
+        }
+    });
+
+10. NESTED OBJECTS (GROUPING)
+    step 1: Add in default values
+        const form = useForm({
+            defaultValues: {
+                username: "rahulGupta899",
+                email: "rgupta.jan@outlook.com",
+                channel: "seeken",
+                social: {         // NESTED OBJECTS (GROUPING)
+                    twitter: '',
+                    facebook: ''
+                }
+            },
+        });
+
+    step 2: Use in jsx
+        <div className="form-control">
+                <label htmlFor="facebook">Facebook</label>
+                <input 
+                    type='text' 
+                    id='facebok' 
+                    {...register('social.facebook')}
+                />
+                <p className="error">{errors.channel?.message}</p>
+        </div>
+    Note: social.facbook is used for accessing the state
+    
+
+11. GROUPING IN ARRAY
+     -> Inside defaultValues declare like This
+        phoneNumbers: ["", ""]
+     -> use in jsx 
+            {/* PRIMARY PHONE */}
+            <div className="form-control">
+                <label htmlFor="primary-phone">Primary Number</label>
+                <input 
+                    type='text' 
+                    id='primary-phone' 
+                    {...register("phoneNumbers.0")}
+                />
+            </div>
+
+            {/* SECONDARY PHONE */}
+            <div className="form-control">
+                <label htmlFor="secondary-phone">Secondary Number</label>
+                <input 
+                    type='text' 
+                    id='secondary-phone' 
+                    {...register("phoneNumbers.1")}
+                />
+            </div>
+
+12. DYNAMIC FIELDS
+     -> Need to use useFieldArray hook:  import {useFieldArray} from 'react-hook-form'
+     -> Add the property in defaultValues: [Need to be Array of Objects]
+        pinCodes: [
+            {pin: ""}    // BY DEFAULT THERE IS ONE PIN
+        ]
+    -> Pass information in useFieldArray
+        const {fields} = useFieldArray({
+            name: pinCodes, 
+            control: control
+        })
+    -> For Array Manipulation useFieldArray provides fuctions like append, remove, etc
+
+13. How to watch field values
+     -> Uses to display the preview value of form fields
+     -> const {...,  watch} = form
+     -> If the requirement is to perform side effect after watching a value, we can use watch in useEffect
+
+14. GET VALUES: 
+        -> Useful for retrieving a value when a action is performed like when clicking a button
+        -> It doesn't triggers re-render unlike watch     
+
+15. SET VALUES
+        -> Allows to set the value of a registered field
+
+16. FIELD LEVEL STATES 
+        -> touched: User interaction
+        -> dirty:   User has modified the value
+        -> These states are also available at form level :
+                const {touchedFields, dirtyFields} = form
+
+        -> isDirty field: 
+                Useful for examples such as when the user has to enable the submit button only when user has entered the data
+
+17. DISABLING FIELDS IN REACT HOOK FROM
+        -> Need to bind disable with the register
+        -> Eg: 
+        <div className="form-control">
+          <label htmlFor="secondary-phone">Secondary Number</label>
+          <input
+            type="text"
+            id="secondary-phone"
+            {...register("phoneNumbers.1",{
+              disabled: true,
+              required: {
+                value: true,
+                message: "Secondary Number is Required"
+              }
+            })}
+          />
+        </div>
+        Note: When we disable a value along with that it's validations are also disabled
+
+18 For conditional disable
+    -> Say scenario, User can enter secondary number only if Primary number is entered until then it's disabled
+    -> Need to use watch()
+    -> Eg: 
+        {/* SECONDARY PHONE */}
+        <div className="form-control">
+          <label htmlFor="secondary-phone">Secondary Number</label>
+          <input
+            type="text"
+            id="secondary-phone"
+            {...register("phoneNumbers.1",{
+              // disabled: true,
+              disabled: watch("username") === "",
+              required: {
+                value: true,
+                message: "Secondary Number is Required"
+              }
+            })}
+          />
+        </div>
+
+19. HANDLE FORM SUBMISSION ERROR
+        -> handleSubmit(onSubmit, onErrorCall) 
+        accepts a second callback which executes when there is error in Form SUBMISSION
+
+20. DISABLE FORM SUBMISSION
+        -> Assumption: Need to disable the form when user has never interacted or form contains Errors
+
+
+21. FORM SUBMISSION STATES
+        -> isSubmitting: state while form is being submitted : useful to prevent multiple submission while form is submitting
+        -> isSubmitted: True once form is submitted
+        -> isSubmitSuccessful: True if form is submitted without any errors
+        -> submitCount: Keeps track how many times form is submitted
+
+
+22. RESETTING FORM VALUES
+        -> Resetting form values once form is successfully submitted
+
+23. VALIDATION MODES
+        -> onSubmit:   triggers validation when Form is submitted
+        -> onBlur:     triggers when focused and leave (Error validation doesn't hides )
+        -> onTouched:  Error validation hides being at focus
+        -> onChange:   triggers validation on every change event
+        -> all:        triggers validation on BOTH change and blur events
+
+
+24. MANUALLY TRIGGER FORM VALIDATION
+        -> using trigger() which we destructure from form
+
+
+
+
+25. YUP Integeration
+        -> Install dependencies: npm install yup @hookform/resolvers
+        -> Define schema
+        -> Hook it up with RHF using resolvers
