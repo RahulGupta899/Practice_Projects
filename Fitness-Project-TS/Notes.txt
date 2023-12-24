@@ -1,0 +1,5 @@
+AREAS TO BE FOCUS IN THIS PROJECT
+
+// Usage of react-anchor-link-smooth-scroll : useful for creating anchor tag and adding sections on the page, also while on click smooth scrolling effect
+
+// Usage of useMediaQueryHook : Monitors the scree and returns true when the specified screen size is met.

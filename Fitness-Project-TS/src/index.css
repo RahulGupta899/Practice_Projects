@@ -1,0 +1,20 @@
+/* FONT NEEDS TO BE ABOVE ALL TAILWIND IMPORTS */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,700&family=Montserrat:wght@700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,body,#root,.app{
+    height:100%;
+    width:100%;
+    font-family: "Dm Sans",sans-serif;  /* Making this a default font*/
+    @apply text-gray-500;            /* Default font color */
+}
+
+.image-container::-webkit-scrollbar-thumb {
+    background-color: #d6dee1;
+    border-radius: 20px;
+    border: 6px solid transparent;
+    background-clip: content-box;
+  }
